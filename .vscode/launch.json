@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/erenturkoglu/PROJECTS/sqlite/src",
+      "program": "/Users/erenturkoglu/PROJECTS/sqlite/src/build/Debug/outDebug"
+    }
+  ]
+}
