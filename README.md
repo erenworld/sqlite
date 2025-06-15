@@ -99,3 +99,6 @@ switch(opcode) {
  create table users (id int, username varchar(255), email varchar(255));
  .tables
  .exit
+
+#### Meta-commands
+Non-SQL statements like .exit are called “meta-commands”.
