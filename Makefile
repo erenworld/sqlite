@@ -17,7 +17,12 @@ CFLAGS  = -std=c99 \
           -Wuninitialized -Winit-self \
           -Wfloat-equal -Wundef -Wcast-align -Wcast-qual \
           -Wno-unused-parameter \
+          -fsanitize=address \
+          -fPIE \
+          -fno-omit-frame-pointer \
           -g
+
+LDFLAGS = -fsanitize=address \
 
 # Output binary name
 NAME    = sqlite
@@ -30,9 +35,9 @@ GRAY1   = \033[0;37m
 GRAY2   = \033[0;90m
 RESET   = \033[0m
 
-# Compilation rule
+# Link rule
 $(NAME): $(OBJ)
-	@$(CC) $(OBJ) -o $(NAME)
+	@$(CC) $(OBJ) -o $(NAME) $(LDFLAGS)
 	@echo "$(PURPLE)[SUCCESS] :\\n  $(GRAY1)|-> Compilation completed!$(RESET)"
 
 # Default rule
@@ -40,9 +45,7 @@ all: $(NAME)
 
 # Compilation of object files
 %.o: %.c
-	@echo "$(YELLOW)[COMPILED]:\\n\
-	  $(GRAY1)|-> [file.c] $(GRAY2)$<\\n\
-	  $(GRAY1)|-> [file.o] $(GRAY2)$@$(RESET)"
+	@echo "$(YELLOW)[COMPILED]:\\n  $(GRAY1)|-> [file.c] $(GRAY2)$<\\n  $(GRAY1)|-> [file.o] $(GRAY2)$@$(RESET)"
 	@$(CC) -c $< -o $@ $(CFLAGS)
 
 # Cleanup rules
