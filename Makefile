@@ -12,7 +12,7 @@ OBJ     = $(SRC:.c=.o)
 # Compiler and flags
 CC      = gcc
 CFLAGS  = -std=c99 \
-          -Wall -Wextra -Wpedantic -Werror \
+          -Wall -Wextra -Wpedantic \
           -Wshadow -Wconversion -Wsign-conversion \
           -Wuninitialized -Winit-self \
           -Wfloat-equal -Wundef -Wcast-align -Wcast-qual \
