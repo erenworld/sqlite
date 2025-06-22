@@ -5,42 +5,7 @@
 ** main
 */
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
-
-#define COLUMN_USERNAME_SIZE 32
-#define COLUMN_EMAIL_SIZE 255
-#define size_of_attribute(Struct, Attribute) sizeof(((Struct*)0)->Attribute)
-
-#define TABLE_MAX_PAGES 100
-
-// PAGES
-//  4 kilobytes because it’s the same size as a page used in the virtual memory systems of most computer architectures. 
-//  This means one page in our database corresponds to one page used by the operating system.
-//  The operating system will move pages in and out of memory as whole units instead of breaking them up.
-
-typedef struct {
-    int file_descriptor;
-    uint32_t file_length;
-    void *pages[TABLE_MAX_PAGES];
-} Pager;
-
-typedef struct {
-    Pager *pager;
-    uint32_t num_rows;
-} Table;
-
-typedef struct {
-    uint32_t id;
-    char username[COLUMN_USERNAME_SIZE + 1];
-    char email[COLUMN_EMAIL_SIZE + 1];
-} Row;
+#include "../include/main.h"
 
 const uint32_t ID_SIZE = size_of_attribute(Row, id);
 const uint32_t USERNAME_SIZE = size_of_attribute(Row, username);
@@ -49,57 +14,15 @@ const uint32_t ID_OFFSET = 0;
 const uint32_t USERNAME_OFFSET = ID_OFFSET + ID_SIZE;
 const uint32_t EMAIL_OFFSET = USERNAME_OFFSET + USERNAME_SIZE;
 const uint32_t ROW_SIZE = ID_SIZE + USERNAME_SIZE + EMAIL_SIZE;
-
 const uint32_t PAGE_SIZE = 4096;
 const uint32_t ROWS_PER_PAGE = PAGE_SIZE / ROW_SIZE;
 const uint32_t TABLE_MAX_ROWS = ROWS_PER_PAGE * TABLE_MAX_PAGES;
-
-typedef enum { EXECUTE_SUCCESS, EXECUTE_TABLE_FULL } ExecuteResult;
 
 // column	    size (bytes)	offset
 // id	        4	            0
 // username	    32	            4
 // email	    255	            36
 // total	    291	 
-
-typedef struct {
-    char *buffer;
-    size_t buffer_length;
-    ssize_t input_length;
-} InputBuffer;
-
-typedef enum {
-    META_COMMAND_SUCCESS,
-    META_COMMAND_UNRECOGNIZED_COMMAND
-} MetaCommandResult;
-
-typedef enum {
-    PREPARE_SUCCESS,
-    PREPARE_UNRECOGNIZED_STATEMENT,
-    PREPARE_SYNTAX_ERROR,
-    PREPARE_STRING_TOO_LONG
-} PrepareResult;
-
-typedef enum {
-    STATEMENT_INSERT,
-    STATEMENT_SELECT
-} StatementType;
-
-typedef struct {
-    StatementType type;
-    Row row_to_insert;
-} Statement;
-
-
-
-// support two operations: inserting a row and printing all rows
-// reside only in memory (no persistence to disk)
-// support a single, hard-coded table
-// COLUMN	    TYPE
-// id	        integer
-// username	    varchar(32)
-// email	    varchar(255)
-// insert 1 cstack foo@bar.com
 
 void serialize_row(Row *source, void *dest)
 {
@@ -215,7 +138,7 @@ ExecuteResult execute_statement(Statement* statement, Table* table)
 
 Pager *pager_open(const char *filename)
 {
-    int fd = open(filename, O_RDWR | O_CREAT | S_IWUSR | S_IRUSR);
+    int fd = open(filename, O_RDWR | O_CREAT, S_IWUSR | S_IRUSR);
 
     if (fd == -1) {
         printf("Unable to open file\n");
@@ -340,6 +263,7 @@ PrepareResult prepare_insert(InputBuffer *input_buffer, Statement *statement)
 {
     statement->type = STATEMENT_INSERT;
 
+    strtok(input_buffer->buffer, " "); // Skip the "insert" keyword
     char *id_string = strtok(NULL, " ");
     char *username = strtok(NULL, " ");
     char *email = strtok(NULL, " ");
